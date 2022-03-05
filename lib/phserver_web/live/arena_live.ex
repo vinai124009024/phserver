@@ -178,9 +178,9 @@ defmodule PhserverWeb.ArenaLive do
         </div>
         <div class="goal-card">
           <label>Robot A : </label>
-         <%= if @robotA_active do %> Active <%=end%>
+         <%= if @robotA_active do %> <div style="text-transform:uppercase;font-weight:bold;color:green"> Active </div> <%=else%> <div style="text-transform:uppercase;font-weight:bold;color:red"> Inactive </div> <%=end%>
          <label>Robot B : </label>
-         <%= if @robotB_active do %> Active <%=end%>
+         <%= if @robotB_active do %> <div style="text-transform:uppercase;font-weight:bold;color:green"> Active </div> <%=else%> <div style="text-transform:uppercase;font-weight:bold;color:red"> Inactive </div> <%=end%>
         </div>
       </div>
 
