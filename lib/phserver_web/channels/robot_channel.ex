@@ -182,6 +182,11 @@ defmodule PhserverWeb.RobotChannel do
         message["value"]["face"] == "west" -> {new_x - 75, new_y} 
         true -> nil
       end
+      new_face = if client_ == "robot_A" do
+      "robota_facing_#{message["value"]["face"]}.jpg"
+    else
+      "robotb_facing_#{message["value"]["face"]}.jpg"
+    end
       :ok = Phoenix.PubSub.broadcast(Phserver.PubSub, "robot:update", %{client: client_, x: new_x, y: new_y, face: new_face, obs: obspos})
     end
     if message["event_id"] == 3 do
