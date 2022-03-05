@@ -168,7 +168,7 @@ defmodule PhserverWeb.RobotChannel do
     if message["event_id"] == 2 do
     y_to_num = %{"a" => 1, "b" => 2, "c" => 3, "d" => 4, "e" => 5, "f" => 6}
     new_x = (message["value"]["x"]-1)*150
-    new_y = (Map.get(y_to_num, message["y"])-1)*150
+    new_y = (Map.get(y_to_num, message["value"]["y"])-1)*150
     client_ = if message["value"]["sender"] == "A" do
      "robot_A"
     else
