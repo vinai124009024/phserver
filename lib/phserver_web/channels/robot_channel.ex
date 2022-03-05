@@ -160,7 +160,7 @@ defmodule PhserverWeb.RobotChannel do
       y_to_num = %{"a" => 1, "b" => 2, "c" => 3, "d" => 4, "e" => 5, "f" => 6}
       new_x = (message["value"]["x"]-1)*150
       new_y = (Map.get(y_to_num, message["value"]["y"])-1)*150
-      client_ = if message["value"]["sender"] == "A" do
+      client_ = if message["sender"] == "A" do
       "robot_A"
       else
       "robot_B"
@@ -190,11 +190,11 @@ defmodule PhserverWeb.RobotChannel do
     end
 
     if message["event_id"] == 7 do
-      :ok = Phoenix.PubSub.broadcast(Phserver.PubSub, "robot:update", {:activity, [message["value"]["sender"], false]})
+      :ok = Phoenix.PubSub.broadcast(Phserver.PubSub, "robot:update", {:activity, [message["sender"], false]})
     end
 
     if message["event_id"] == 8 do
-      :ok = Phoenix.PubSub.broadcast(Phserver.PubSub, "robot:update", {:activity, [message["value"]["sender"], true]})
+      :ok = Phoenix.PubSub.broadcast(Phserver.PubSub, "robot:update", {:activity, [message["sender"], true]})
     end
 
     {:reply, {:ok, true}, socket}
