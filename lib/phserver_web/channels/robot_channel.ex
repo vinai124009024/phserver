@@ -165,14 +165,30 @@ defmodule PhserverWeb.RobotChannel do
   def handle_in("event_msg", message, socket) do
     message = Map.put(message, "timer", socket.assigns[:timer_tick])
     PhserverWeb.Endpoint.broadcast_from(self(), "robot:status", "event_msg", message)
+    if message["event_id"] == 2 do
+    y_to_num = %{"a" => 1, "b" => 2, "c" => 3, "d" => 4, "e" => 5, "f" => 6}
+    new_x = (message["value"]["x"]-1)*150
+    new_y = (Map.get(y_to_num, message["y"])-1)*150
+    client_ = if message["value"]["sender"] == "A" do
+     "robot_A"
+    else
+     "robot_B"
+    end
+    obspos =
+      cond do
+        message["value"]["face"] == "north" -> {new_x, new_y + 75}
+        message["value"]["face"] == "south" -> {new_x, new_y - 75}
+        message["value"]["face"] == "east" -> {new_x + 75, new_y}
+        message["value"]["face"] == "west" -> {new_x - 75, new_y} 
+        true -> nil
+      end
+      :ok = Phoenix.PubSub.broadcast(Phserver.PubSub, "robot:update", %{client: client_, x: new_x, y: new_y, face: new_face, obs: obspos})
+    end
     if message["event_id"] == 3 do
       :ok = Phoenix.PubSub.broadcast(Phserver.PubSub, "robot:update", {:sw, ["sowing", goal_conv(message["value"])]})
     end
     if message["event_id"] == 4 do
       :ok = Phoenix.PubSub.broadcast(Phserver.PubSub, "robot:update", {:sw, ["weeding", goal_conv(message["value"])]})
-    end
-    if message["event_id"] == 6 do
-      IO.puts("fsvfsbvhjs vhsbvhs bvhbv hjbvhjsvb hbvf")
     end
     {:reply, {:ok, true}, socket}
   end
