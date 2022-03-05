@@ -18,14 +18,14 @@ defmodule PhserverWeb.ArenaLive do
     :ok = Phoenix.PubSub.subscribe(Phserver.PubSub, "robot:update")
     :ok = Phoenix.PubSub.subscribe(Phserver.PubSub, "timer:update")
 
-    socket = assign(socket, :img_robotA, "robota_facing_north.jpg")
+    socket = assign(socket, :img_robotA, "robota_facing_north.png")
     socket = assign(socket, :bottom_robotA, 0)
     socket = assign(socket, :left_robotA, 0)
     socket = assign(socket, :robotA_start, "")
     socket = assign(socket, :robotA_goals, [])
     socket = assign(socket, :robotA_active, true)
 
-    socket = assign(socket, :img_robotB, "robotb_facing_south.jpg")
+    socket = assign(socket, :img_robotB, "robotb_facing_south.png")
     socket = assign(socket, :bottom_robotB, 750)
     socket = assign(socket, :left_robotB, 750)
     socket = assign(socket, :robotB_start, "")
