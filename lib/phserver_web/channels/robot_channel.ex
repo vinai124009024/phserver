@@ -9,7 +9,7 @@ defmodule PhserverWeb.RobotChannel do
   def join("robot:status", _params, socket) do
     #PhserverWeb.Endpoint.subscribe("robot:update")
     PhserverWeb.Endpoint.subscribe("timer:update")
-    socket = assign(socket, :timer_tick, 180)
+    socket = assign(socket, :timer_tick, 300)
     {:ok, socket}
   end
 
@@ -180,7 +180,7 @@ defmodule PhserverWeb.RobotChannel do
   def handle_info(%{event: "update_timer_tick", payload: timer_data, topic: "timer:update"}, socket) do
     Agent.get(:rh, fn l -> Enum.each(l, fn r -> 
 
-     if 180 - String.to_integer(r["st"]) == timer_data.time do
+     if 300 - String.to_integer(r["st"]) == timer_data.time do
       if r["robot"] == "A" do
         Agent.update(:rs, fn l -> %{"A" => 0, "B" => l["B"]} end)
         PhserverWeb.Endpoint.broadcast_from(self(), "robot:status", "event_msg", %{"event_id" => 6, "sender" => "Server", "value" => %{"A" => r["st"]}})
@@ -190,7 +190,7 @@ defmodule PhserverWeb.RobotChannel do
       end
      end
 
-     if 180 - String.to_integer(r["rst"]) == timer_data.time do
+     if 300 - String.to_integer(r["rst"]) == timer_data.time do
       if r["robot"] == "A" do
         Agent.update(:rs, fn l -> %{"A" => 1, "B" => l["B"]} end)
       else

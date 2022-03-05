@@ -33,7 +33,7 @@ defmodule PhserverWeb.ArenaLive do
     socket = assign(socket, :obstacle_pos, MapSet.new())
     socket = assign(socket, :weeding, MapSet.new())
     socket = assign(socket, :sowing, MapSet.new())
-    socket = assign(socket, :timer_tick, 180)
+    socket = assign(socket, :timer_tick, 300)
 
     {:ok,socket}
 
