@@ -43,17 +43,7 @@ defmodule PhserverWeb.RobotChannel do
     client_ = (message["client"])
     new_x = (message["x"]-1)*150
     new_y = (Map.get(y_to_num, message["y"])-1)*150
-    obspos = if message["obs"] do
-      cond do
-        message["face"] == "north" -> {new_x, new_y + 75}
-        message["face"] == "south" -> {new_x, new_y - 75}
-        message["face"] == "east" -> {new_x + 75, new_y}
-        message["face"] == "west" -> {new_x - 75, new_y} 
-        true -> nil
-      end
-    else
-      nil
-    end
+    obspos = nil
 
     robot_status = if client_ == "robot_A" do
       Agent.get(:rs, fn l -> l["A"] end)
@@ -63,10 +53,10 @@ defmodule PhserverWeb.RobotChannel do
     
     new_face = if client_ == "robot_A" do
       Agent.update(:curr_pos, fn l -> %{"a" => message, "b" => l["b"]} end)
-      "robota_facing_#{message["face"]}.jpg"
+      "robota_facing_#{message["face"]}.png"
     else
       Agent.update(:curr_pos, fn l -> %{"a" => l["a"], "b" => message} end)
-      "robotb_facing_#{message["face"]}.jpg"
+      "robotb_facing_#{message["face"]}.png"
     end
     :ok = Phoenix.PubSub.broadcast(Phserver.PubSub, "robot:update", %{client: client_, x: new_x, y: new_y, face: new_face, obs: obspos})
     {:reply, {:ok, robot_status}, socket}
@@ -165,36 +155,48 @@ defmodule PhserverWeb.RobotChannel do
   def handle_in("event_msg", message, socket) do
     message = Map.put(message, "timer", socket.assigns[:timer_tick])
     PhserverWeb.Endpoint.broadcast_from(self(), "robot:status", "event_msg", message)
+
     if message["event_id"] == 2 do
-    y_to_num = %{"a" => 1, "b" => 2, "c" => 3, "d" => 4, "e" => 5, "f" => 6}
-    new_x = (message["value"]["x"]-1)*150
-    new_y = (Map.get(y_to_num, message["value"]["y"])-1)*150
-    client_ = if message["value"]["sender"] == "A" do
-     "robot_A"
-    else
-     "robot_B"
-    end
-    obspos =
-      cond do
-        message["value"]["face"] == "north" -> {new_x, new_y + 75}
-        message["value"]["face"] == "south" -> {new_x, new_y - 75}
-        message["value"]["face"] == "east" -> {new_x + 75, new_y}
-        message["value"]["face"] == "west" -> {new_x - 75, new_y} 
-        true -> nil
+      y_to_num = %{"a" => 1, "b" => 2, "c" => 3, "d" => 4, "e" => 5, "f" => 6}
+      new_x = (message["value"]["x"]-1)*150
+      new_y = (Map.get(y_to_num, message["value"]["y"])-1)*150
+      client_ = if message["value"]["sender"] == "A" do
+      "robot_A"
+      else
+      "robot_B"
       end
-      new_face = if client_ == "robot_A" do
-      "robota_facing_#{message["value"]["face"]}.jpg"
-    else
-      "robotb_facing_#{message["value"]["face"]}.jpg"
+      obspos =
+        cond do
+          message["value"]["face"] == "north" -> {new_x, new_y + 75}
+          message["value"]["face"] == "south" -> {new_x, new_y - 75}
+          message["value"]["face"] == "east" -> {new_x + 75, new_y}
+          message["value"]["face"] == "west" -> {new_x - 75, new_y} 
+          true -> nil
+        end
+        new_face = if client_ == "robot_A" do
+        "robota_facing_#{message["value"]["face"]}.png"
+      else
+        "robotb_facing_#{message["value"]["face"]}.png"
+      end
+        :ok = Phoenix.PubSub.broadcast(Phserver.PubSub, "robot:update", %{client: client_, x: new_x, y: new_y, face: new_face, obs: obspos})
     end
-      :ok = Phoenix.PubSub.broadcast(Phserver.PubSub, "robot:update", %{client: client_, x: new_x, y: new_y, face: new_face, obs: obspos})
-    end
+
     if message["event_id"] == 3 do
       :ok = Phoenix.PubSub.broadcast(Phserver.PubSub, "robot:update", {:sw, ["sowing", goal_conv(message["value"])]})
     end
+
     if message["event_id"] == 4 do
       :ok = Phoenix.PubSub.broadcast(Phserver.PubSub, "robot:update", {:sw, ["weeding", goal_conv(message["value"])]})
     end
+
+    if message["event_id"] == 7 do
+      :ok = Phoenix.PubSub.broadcast(Phserver.PubSub, "robot:update", {:activity, [message["value"]["sender"], false]})
+    end
+
+    if message["event_id"] == 8 do
+      :ok = Phoenix.PubSub.broadcast(Phserver.PubSub, "robot:update", {:activity, [message["value"]["sender"], true]})
+    end
+
     {:reply, {:ok, true}, socket}
   end
 

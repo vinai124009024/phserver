@@ -23,12 +23,14 @@ defmodule PhserverWeb.ArenaLive do
     socket = assign(socket, :left_robotA, 0)
     socket = assign(socket, :robotA_start, "")
     socket = assign(socket, :robotA_goals, [])
+    socket = assign(socket, :robotA_active, true)
 
     socket = assign(socket, :img_robotB, "robotb_facing_south.jpg")
     socket = assign(socket, :bottom_robotB, 750)
     socket = assign(socket, :left_robotB, 750)
     socket = assign(socket, :robotB_start, "")
     socket = assign(socket, :robotB_goals, [])
+    socket = assign(socket, :robotB_active, true)
 
     socket = assign(socket, :obstacle_pos, MapSet.new())
     socket = assign(socket, :weeding, MapSet.new())
@@ -174,7 +176,12 @@ defmodule PhserverWeb.ArenaLive do
             </button>
           </form>
         </div>
-
+        <div class="goal-card">
+          <label>Robot A : </label>
+         <%= if @robotA_active do %> Active <%=end%>
+         <label>Robot B : </label>
+         <%= if @robotB_active do %> Active <%=end%>
+        </div>
       </div>
 
     </div>
@@ -241,6 +248,15 @@ defmodule PhserverWeb.ArenaLive do
   Make sure to add a tuple of format: { < obstacle_x >, < obstacle_y > } to the MapSet object "obstacle_pos".
   These values must be in pixels. You may handle these variables in separate callback functions as well.
   """
+
+  def handle_info({:activity, [r, v]}, socket) do
+    socket = if r == "A" do
+      assign(socket, :robotA_active, v)
+    else
+      assign(socket, :robotB_active, v)
+    end
+    {:noreply, socket}
+  end
 
   def handle_info({:goalpos, [r, loc]}, socket) do
     socket = if r == "robotA" do
