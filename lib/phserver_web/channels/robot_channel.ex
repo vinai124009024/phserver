@@ -30,6 +30,8 @@ defmodule PhserverWeb.RobotChannel do
   If an obstacle is present ahead of the robot, then broadcast the pixel location of the obstacle to be displayed on the Dashboard.
   """
 
+  # handles the robot status and updates the current location variable
+
   def handle_in("new_msg", message, socket) do
     # file object to write each action taken by each Robot (A as well as B)
     {:ok, out_file} = File.open("task_5_output.txt", [:append])
@@ -66,6 +68,8 @@ defmodule PhserverWeb.RobotChannel do
   ## define callback functions as needed ##
   #########################################
 
+  # initializes the variables using Agents.
+
   def handle_in("init", message, socket) do
     Agent.start_link(fn -> [[], []] end, name: :hello)
     Agent.start_link(fn -> %{"a" => false, "b" => false} end, name: :end)
@@ -73,6 +77,8 @@ defmodule PhserverWeb.RobotChannel do
     Agent.start_link(fn -> %{"a" => %{}, "b" => %{}} end, name: :curr_pos)
     {:reply, :ok, socket}
   end
+
+  # reads the goal locations from the plant positions file and timings from the robot handle file and stores the data using Agents
 
   def handle_in("get_goals", _message, socket) do
     data = File.read!("Plant_Positions.csv")
@@ -91,6 +97,8 @@ defmodule PhserverWeb.RobotChannel do
     {:reply, {:ok, data}, socket}
   end
 
+  # converts the plant position numbers into co-ordinates
+
   def goal_conv(g) do
     num_to_y = %{1 => :a, 2 => :b, 3 => :c, 4 => :d, 5 => :e, 6 => :f}
       [x,y] = 
@@ -102,9 +110,13 @@ defmodule PhserverWeb.RobotChannel do
       [Integer.to_string(x), Map.get(num_to_y, trunc(y))]
   end
 
+  # updates the start positions of both the robots
+
   def startpos(as, bs) do
     Agent.update(:hello, fn l -> [as, bs] end)
   end
+
+  # returns the start positions back to the clients
 
   def handle_in("get_start_pos", m, socket) do
     l = if m == "robotA" do
@@ -114,6 +126,8 @@ defmodule PhserverWeb.RobotChannel do
     end
     {:reply, {:ok, l}, socket}
   end
+
+  # calls the stop timer when both the robots have completed their tasks
 
   def handle_in("stop_process", m, socket) do
     if m == ["A"] do
@@ -129,10 +143,14 @@ defmodule PhserverWeb.RobotChannel do
     {:reply, :ok, socket}
   end
 
+  # gets the updated goals from the initialized variables
+
   def handle_in("get_upd_goals", _m, socket) do
     l = Agent.get(:goals, fn l -> l end)
     {:reply, {:ok, l}, socket}    
   end
+
+  # updates the goals variable if any robot has completed a task
 
   def handle_in("upd_goals", [g, r], socket) do
     g1 = Enum.at(g, 0) |> Integer.to_string()
@@ -143,6 +161,8 @@ defmodule PhserverWeb.RobotChannel do
     {:reply, :ok, socket}    
   end
 
+  # gets the position of the other robot to prevent clashing
+
   def handle_in("get_pos", m, socket) do
     pos = if m == "robotB" do
       Agent.get(:curr_pos, fn l -> l["b"] end)
@@ -151,6 +171,8 @@ defmodule PhserverWeb.RobotChannel do
     end
     {:reply, {:ok, pos}, socket} 
   end
+
+  # handles the event_msg for evaluation and also updates the live view
 
   def handle_in("event_msg", message, socket) do
     message = Map.put(message, "timer", socket.assigns[:timer_tick])
@@ -199,6 +221,8 @@ defmodule PhserverWeb.RobotChannel do
 
     {:reply, {:ok, true}, socket}
   end
+
+  # updates the timer in the live view
 
   def handle_info(%{event: "update_timer_tick", payload: timer_data, topic: "timer:update"}, socket) do
     Agent.get(:rh, fn l -> Enum.each(l, fn r -> 

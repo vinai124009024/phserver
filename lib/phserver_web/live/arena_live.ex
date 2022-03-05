@@ -249,6 +249,8 @@ defmodule PhserverWeb.ArenaLive do
   These values must be in pixels. You may handle these variables in separate callback functions as well.
   """
 
+  # handles whether the robot is active or inactive
+
   def handle_info({:activity, [r, v]}, socket) do
     socket = if r == "A" do
       assign(socket, :robotA_active, v)
@@ -258,6 +260,8 @@ defmodule PhserverWeb.ArenaLive do
     {:noreply, socket}
   end
 
+  # handles the goal locations reached by the robots
+
   def handle_info({:goalpos, [r, loc]}, socket) do
     socket = if r == "robotA" do
       assign(socket, :robotA_goals, socket.assigns.robotA_goals ++ [loc["num"]])
@@ -266,6 +270,8 @@ defmodule PhserverWeb.ArenaLive do
     end
     {:noreply, socket}
   end
+
+  # depicts the sowing/weeding on the live view
 
   def handle_info({:sw, [sw, loc]}, socket) do
     y_to_num = %{:a => 1, :b => 2, :c => 3, :d => 4, :e => 5, :f => 6}
@@ -278,6 +284,8 @@ defmodule PhserverWeb.ArenaLive do
     end
     {:noreply, socket}
   end
+
+  # handles the robot location and obstacles encountered by the robot
 
   def handle_info(data, socket) do
 
